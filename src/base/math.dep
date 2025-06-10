@@ -1,0 +1,2 @@
+src/base/math.o: src/base/math.c src/base/math.h src/base/array.h \
+  src/base/mem.h src/base/core.h src/base/context.h src/base/string.h

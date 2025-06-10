@@ -1,0 +1,2 @@
+src/base/array.o: src/base/array.c src/base/array.h src/base/mem.h \
+  src/base/core.h src/base/context.h

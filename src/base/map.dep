@@ -1,0 +1,2 @@
+src/base/map.o: src/base/map.c src/base/map.h src/base/string.h \
+  src/base/array.h src/base/mem.h src/base/core.h src/base/context.h

@@ -1,0 +1,5 @@
+src/compiler/lexer.o: src/compiler/lexer.c src/base/mem.h src/base/core.h \
+  src/base/context.h src/compiler/interns.h src/base/map.h \
+  src/base/string.h src/base/array.h src/compiler/lexer.h src/base/log.h \
+  src/compiler/sem.h src/compiler/vm.h src/compiler/abi.h \
+  src/compiler/ast.h

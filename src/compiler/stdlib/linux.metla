@@ -1,0 +1,40 @@
+fn:(linux = 0)  read   (fd: I32, buf: ~U8, count: U64);
+fn:(linux = 1)  write  (fd: I32, buf: ~U8, count: U64);
+fn:(linux = 2)  open   (pathname: ~U8, flags: I32, mode: U64);
+fn:(linux = 9)  mmap   (addr: I64, length: U64, prot: ProtFlags, flags: MapFlags, fd: I32, offset: I64) -> ~U8;
+fn:(linux = 11) munmap (addr: I64, length: U64) -> I32;
+fn:(linux = 60) exit   (status: I32);
+
+fn alloc (n_bytes: U64) -> ~U8 do return mmap(0, n_bytes, ProtFlags.read|.write, MapFlags.private|.anonymous, -1, 0);
+fn abort do exit(1);
+
+enum:(flags, U32) ProtFlags {
+    none,
+    read,
+    write,
+    exec,
+}
+
+enum:(flags, U32) MapFlags {
+    shared,
+    private,
+    fixed,
+    rename,
+    noreserve,
+    reserved0080,
+    noextend,
+    hassemaphore,
+    nocache,
+    jit,
+    file,
+    anonymous,
+    resilient_codesign,
+    resilient_media,
+    bit32,
+    translated_allow_execute,
+    unix03,
+}
+
+var stdin:  I32 = 0;
+var stdout: I32 = 1;
+var stderr: I32 = 2;

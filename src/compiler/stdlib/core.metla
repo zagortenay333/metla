@@ -1,0 +1,32 @@
+// =============================================================================
+// IMPORTANT:
+// ----------
+//
+// This file contains special constructs that are either part
+// of core language semantics or are in some way used by the
+// compiler internally.
+//
+// User space code must not touch this file in any way.
+// =============================================================================
+
+type TypeId = U64;
+
+struct Slice ($T) {
+    count: U64;
+    data: ~T;
+}
+
+type:alias String   = Slice(U8);
+type:alias SliceAny = Slice(Any);
+
+struct Any {
+    id: TypeId;
+    value: U64;
+}
+
+struct CallerInfo {
+    line: U64; // 1-indexed.
+    offset: U64; // 0-indexed in bytes.
+    name: String;
+    file_path: String;
+}

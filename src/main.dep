@@ -1,0 +1,6 @@
+src/main.o: src/main.c src/base/core.h src/base/context.h src/base/mem.h \
+  src/base/array.h src/os/fs.h src/base/string.h src/compiler/x64.h \
+  src/compiler/sir.h src/compiler/interns.h src/base/map.h \
+  src/compiler/lexer.h src/base/log.h src/compiler/sem.h \
+  src/compiler/vm.h src/compiler/abi.h src/compiler/ast.h \
+  src/compiler/sir_ops.h

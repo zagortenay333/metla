@@ -1,0 +1,6 @@
+src/compiler/vm.o: src/compiler/vm.c src/compiler/vm.h src/base/map.h \
+  src/base/string.h src/base/array.h src/base/mem.h src/base/core.h \
+  src/base/context.h src/compiler/abi.h src/compiler/sem.h \
+  src/compiler/ast.h src/base/log.h src/compiler/interns.h \
+  src/compiler/lexer.h src/compiler/sir.h src/compiler/sir_ops.h \
+  src/compiler/sir_reg.h src/compiler/sir_frame.h src/compiler/elf.h
