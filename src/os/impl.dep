@@ -1,4 +1,0 @@
-src/os/impl.o: src/os/impl.c src/base/core.h src/base/context.h \
-  src/os/linux/fs.c src/os/fs.h src/base/mem.h src/base/string.h \
-  src/base/array.h src/os/linux/time.c src/os/linux/info.c src/os/info.h \
-  src/os/linux/threads.c src/os/threads.h src/base/log.h

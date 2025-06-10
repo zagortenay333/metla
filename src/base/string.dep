@@ -1,2 +1,0 @@
-src/base/string.o: src/base/string.c src/base/string.h src/base/array.h \
-  src/base/mem.h src/base/core.h src/base/context.h src/os/fs.h

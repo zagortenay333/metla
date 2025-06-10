@@ -1,2 +1,0 @@
-src/base/tpool.o: src/base/tpool.c src/base/mem.h src/base/core.h \
-  src/base/context.h src/base/tpool.h src/base/array.h src/os/threads.h

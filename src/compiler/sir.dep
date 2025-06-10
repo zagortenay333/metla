@@ -1,6 +1,0 @@
-src/compiler/sir.o: src/compiler/sir.c src/base/string.h src/base/array.h \
-  src/base/mem.h src/base/core.h src/base/context.h src/base/log.h \
-  src/os/fs.h src/compiler/sir.h src/compiler/interns.h src/base/map.h \
-  src/compiler/lexer.h src/compiler/sem.h src/compiler/vm.h \
-  src/compiler/abi.h src/compiler/ast.h src/compiler/sir_ops.h \
-  src/compiler/sir_reg.h src/compiler/sir_optimizer.h

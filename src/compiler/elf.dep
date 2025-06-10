@@ -1,3 +1,0 @@
-src/compiler/elf.o: src/compiler/elf.c src/compiler/elf.h src/base/mem.h \
-  src/base/core.h src/base/context.h src/base/array.h src/base/string.h \
-  src/os/fs.h

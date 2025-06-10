@@ -1,2 +1,0 @@
-src/base/mem.o: src/base/mem.c src/base/mem.h src/base/core.h \
-  src/base/context.h src/base/log.h src/base/string.h src/base/array.h

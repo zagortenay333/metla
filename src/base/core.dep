@@ -1,3 +1,0 @@
-src/base/core.o: src/base/core.c src/base/log.h src/base/core.h \
-  src/base/context.h src/base/string.h src/base/array.h src/base/mem.h \
-  src/os/time.h
