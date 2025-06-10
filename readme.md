@@ -11,3 +11,6 @@ The compiler architecture has 3 parts:
      like sparse conditional constants propagation, as well as
      a register allocator from the linear-scan family.
   3. An incomplete x64 backend that doesn't support floats.
+
+The project is written in gnu23, so it will require a somewhat newer
+version of gcc or clang.
