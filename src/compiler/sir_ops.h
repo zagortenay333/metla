@@ -17,31 +17,6 @@
 //     default_flags:  SirOpFlags
 // )
 //
-// SirOps:
-// -------
-//
-// Before reading this, make sure you read the top comment in the sir.c
-// module which describes the Sir program representation in full.
-//
-// In Sir we don't have separate data structures for virtual registers
-// and instructions. A given SirOp can represent a virtual register, an
-// instruction, both, neither or some combo of these. For example:
-//
-//     SIR_OP_JUMP   is just an instruction.
-//     SIR_OP_FN_ARG is just a virtual register containing a fn argument.
-//     SIR_OP_ADD    is an add instruction and register holding the result.
-//     SIR_OP_PHI    is a virtual instruction used when Sir is in SSA form.
-//     SIR_OP_STORE  is an instruction and special register modeling memory.
-//
-// SirOps can have 3 kinds of arguments: special, input, output. Input
-// and output arguments refer to virtual registers that an instruction
-// is reading and/or writing. Special args are used to create ad hoc
-// data structures within the IR such as the memory dependency graph.
-//
-// All 3 kinds of arguments appear in the same array SirOp.args in the
-// order specials, outputs, inputs. For more info about the SirOp.args
-// array check out the two functions sir_op_get_inputs/outputs.
-//
 // Nomenclature in comments describing ops:
 // ----------------------------------------
 //

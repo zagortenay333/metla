@@ -1,5 +1,76 @@
 #pragma once
 
+// =============================================================================
+// Overview:
+// ---------
+//
+// Sir is a classical IR made up of a control flow graph (SirFn)
+// whose nodes are basic blocks (SirBlock) where blocks contain
+// instructions (SirOp) in three-address form. The instructions
+// use virtual registers.
+//
+// SirOps:
+// -------
+//
+// Before reading this, make sure you read the top comment in the sir.c
+// module which describes the Sir program representation in full.
+//
+// In Sir we don't have separate data structures for virtual registers
+// and instructions. A given SirOp can represent a virtual register, an
+// instruction, both, neither or some combo of these. For example:
+//
+//     SIR_OP_JUMP   is just an instruction.
+//     SIR_OP_FN_ARG is just a virtual register containing a fn argument.
+//     SIR_OP_ADD    is an add instruction and register holding the result.
+//     SIR_OP_PHI    is a virtual instruction used when Sir is in SSA form.
+//     SIR_OP_STORE  is an instruction and special register modeling memory.
+//
+// SirOps can have 3 kinds of arguments: special, input, output. Input
+// and output arguments refer to virtual registers that an instruction
+// is reading and/or writing. Special args are used to create ad hoc
+// data structures within the IR such as the memory dependency graph.
+//
+// All 3 kinds of arguments appear in the same array SirOp.args in the
+// order specials, outputs, inputs. For more info about the SirOp.args
+// array check out the two functions sir_op_get_inputs/outputs.
+//
+// Memory dependency modeling:
+// ---------------------------
+//
+// We want to know whether two given instructions are touching the
+// same memory. In order to do that we have to create some kind of
+// a data structure that tracks which ops have these dependencies
+// between them.
+//
+// In this IR we use a trick to implement this dependency system.
+// We pretend that all memory fits into a single virtual register.
+// The variable this virtual register is bound to during a scope
+// lookup is SIR_VAR_MEMORY.
+//
+// The virtual register that will represent memory at the start of
+// a procedure is introduced with the SIR_OP_MEMORY.
+//
+// Any SirOp that touches memory is treated like it's reading this
+// memory register, and it will have as it's first special argument
+// that memory register.
+//
+// Any SirOp that modifies memory is treated like it's writing to
+// that register, and thus just like with regular SSA variables we
+// rebind the SIR_VAR_MEMORY variable to this new SirOp. That is,
+// now there will be a new current version of memory represented
+// by this memory register.
+//
+// Also, just like with SSA variables, it's possible that during a
+// scope lookup we introduces a phi op into a block. Specifically,
+// this will be a SIR_OP_PHI_MEM. This phi represents multiple
+// versions of memory converging on a basic block.
+//
+// The initial construction of Sir creates a pessimistic dependency
+// graph. Each instruction that touches memory will depend on the
+// previous instruction (up the control flow graph) that touches
+// memory. The function relax_memory_dependencies() defined in the
+// sir_optimizer.h module is used to fix this.
+// =============================================================================
 #include "compiler/interns.h"
 #include "compiler/abi.h"
 #include "compiler/sem.h"
@@ -20,11 +91,9 @@ array_typedef(SirOp*, SirOp);
 array_typedef(SirBlock*, SirBlock);
 array_typedef(SirFn*, SirFn);
 
-// @todo make this comment better.
-// A SirVar connects virtual register which represent
-// different versions of it. It is used during Sir
-// construction and afterwards by sir_update_phi(),
-// so it's mostly an internal thing.
+// A SirVar connects virtual register which represent different
+// versions of it. It is used during Sir construction and later
+// by sir_update_phi(), so it's mostly an internal thing.
 typedef U32 SirVar;
 typedef Array(struct { SirVar var; SirOp *val; }) SirSsaScope;
 

@@ -1,12 +1,4 @@
 // =============================================================================
-// Overview:
-// ---------
-//
-// Sir is a classical IR made up of a control flow graph (SirFn)
-// whose nodes are basic blocks (SirBlock) where blocks contain
-// instructions (SirOp) in three-address form. The instructions
-// use virtual registers.
-//
 // SSA construction algorithm:
 // ---------------------------
 //
@@ -20,9 +12,6 @@
 //     K. (eds) Compiler Construction. CC 2013. Lecture Notes in
 //     Computer Science, vol 7791. Springer, Berlin, Heidelberg.
 //     https://doi.org/10.1007/978-3-642-37051-9_6
-//
-// SSA construction algorithm description:
-// ---------------------------------------
 //
 // The ssa_scope_lookup() function comprises most of the algorithm.
 //
@@ -67,43 +56,6 @@
 //
 // To determine if the variable you are about to lookup is an ssa or
 // a memory bound variable, use the function value_is_in_register().
-//
-// Memory dependency modeling:
-// ---------------------------
-//
-// We want to know whether two given instructions are touching the
-// same memory. In order to do that we have to create some kind of
-// a data structure that tracks which ops have these dependencies
-// between them.
-//
-// In this IR we use a trick to implement this dependency system.
-// We pretend that all memory fits into a single virtual register.
-// The variable this virtual register is bound to during a scope
-// lookup is SIR_VAR_MEMORY.
-//
-// The virtual register that will represent memory at the start of
-// a procedure is introduced with the SIR_OP_MEMORY.
-//
-// Any SirOp that touches memory is treated like it's reading this
-// memory register, and it will have as it's first special argument
-// that memory register.
-//
-// Any SirOp that modifies memory is treated like it's writing to
-// that register, and thus just like with regular SSA variables we
-// rebind the SIR_VAR_MEMORY variable to this new SirOp. That is,
-// now there will be a new current version of memory represented
-// by this memory register.
-//
-// Also, just like with SSA variables, it's possible that during a
-// scope lookup we introduces a phi op into a block. Specifically,
-// this will be a SIR_OP_PHI_MEM. This phi represents multiple
-// versions of memory converging on a basic block.
-//
-// The initial construction of Sir creates a pessimistic dependency
-// graph. Each instruction that touches memory will depend on the
-// previous instruction (up the control flow graph) that touches
-// memory. The function relax_memory_dependencies() defined in the
-// sir_optimizer.h module is used to fix this.
 // =============================================================================
 #include "base/string.h"
 #include "base/log.h"
