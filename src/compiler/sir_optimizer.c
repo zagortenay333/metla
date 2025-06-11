@@ -15,24 +15,24 @@ static Void cut_edge (SirBlock *from, SirBlock *to) {
     sir_update_idom(to);
 }
 
-typedef struct {
+istruct (Sccp) {
     Mem *mem;
     SirFn *fn;
     Array(Value) infos;
     Array(SirOp*) ops_to_eval;
     Array(SirBlock*) blocks_to_eval;
-} Sccp;
+};
 
-typedef enum: U8 {
+fenum (SccpFlags, U8) {
     SCCP_SIR_OP_CONST     = SIR_OP_0,
     SCCP_SIR_OP_NOT_CONST = SIR_OP_1,
-} SccpFlags;
+};
 
-typedef enum: U8 {
+ienum (SccpOpStatus, U8) {
     SCCP_MAYBE_CONST = 0,
     SCCP_CONST       = SCCP_SIR_OP_CONST,
     SCCP_NOT_CONST   = SCCP_SIR_OP_NOT_CONST,
-} SccpOpStatus;
+};
 
 static Value sccp_get_data (Sccp *sccp, SirOp *op) {
     return array_get(&sccp->infos, op->id);
