@@ -123,13 +123,6 @@ istruct (CoreTypes) {
     #undef X
 };
 
-// Field offsets and sizes of some core types.
-#define TYPE_ANY_ID_OFFSET      0
-#define TYPE_ANY_VALUE_SIZE     8
-#define TYPE_ANY_VALUE_OFFSET   8
-#define TYPE_SLICE_DATA_OFFSET  8
-#define TYPE_SLICE_COUNT_OFFSET 0
-
 istruct (Sem);
 
 // Use this to iterate over the children of an AST node that
