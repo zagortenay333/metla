@@ -12,9 +12,6 @@
 // SirOps:
 // -------
 //
-// Before reading this, make sure you read the top comment in the sir.c
-// module which describes the Sir program representation in full.
-//
 // In Sir we don't have separate data structures for virtual registers
 // and instructions. A given SirOp can represent a virtual register, an
 // instruction, both, neither or some combo of these. For example:
@@ -140,8 +137,9 @@ fenum (SirBlockFlags, U16) {
 };
 
 ienum (SirBlockTag, U32) {
-    #define DECL_SIR_BLOCK_TAG(tag) tag,
-    EACH_SIR_BLOCK(DECL_SIR_BLOCK_TAG)
+    #define X(tag) tag,
+        EACH_SIR_BLOCK(X)
+    #undef X
 };
 
 istruct (SirBlock) {
