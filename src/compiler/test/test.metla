@@ -3,12 +3,13 @@ fn print (str: Slice(U8)) {
     linux.write(1, str.data, str.count);
 }
 
-fn println (str: Slice(U8)) {
+fn: #ir1 println (str: Slice(U8)) {
     print(str);
+    print("\n");
 }
 
-fn: #ir1 main {
-    println("Hello World!\n");
+fn main {
+    println("Hello World!");
 }
 
 // This tests the poly value feature "n$":

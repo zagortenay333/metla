@@ -27,7 +27,7 @@ istruct (SirX64) {
 
 // This array maps RegTag to SirReg*.
 // It's initialized by allocate_registers().
-SirReg *R[GPR_COUNT + 1];
+SirReg *R[GPR_COUNT + 2];
 
 // X(RegTag, is_callee_saved, name, x64_reg_number)
 //
@@ -926,6 +926,7 @@ static SirRegAlloc *allocate_registers (SirX64 *x64) {
     ra->tmp_reg0  = R[TMP0];
     ra->tmp_reg1  = R[TMP1];
     ra->dummy_reg = sir_make_reg(ra, x64->mem, NIL, str("nil"), false);
+    R[NIL]        = ra->dummy_reg;
 
     sir_alloc_regs(ra);
 
@@ -978,18 +979,22 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
             Auto reg_id  = sir_reg_id(reg);
             Auto reg_abi = array_get(&callee_abi->inputs, ARRAY_IDX);
 
+            Bool virtual_reg_is_spilled = (reg_id == NIL);
+            Bool arg_is_passed_on_stack = (reg_abi == ABI_REG_MEM);
+
             Type *arg_type = arg->type;
-            if ((arg->tag == SIR_OP_STACK_OBJECT) || (arg->tag == SIR_OP_GLOBAL_OBJECT)) {
+            if ((arg->tag == SIR_OP_STACK_OBJECT) ||
+                (arg->tag == SIR_OP_GLOBAL_OBJECT) ||
+                ((arg->tag == SIR_OP_FN_ARG) && arg_is_passed_on_stack)
+            ) {
                 assert_dbg(arg->type->tag == TYPE_POINTER);
                 arg_type = cast(TypePointer*, arg->type)->pointee;
             }
 
-            Bool virtual_reg_is_spilled = (reg_id == NIL);
-            Bool arg_is_passed_on_stack = (reg_abi == ABI_REG_MEM);
             Bool arg_is_in_virtual_reg  = can_be_in_reg(x64->abi, arg_type);
 
             if (arg_is_passed_on_stack) {
-                Auto arg_abi  = abi_of_obj(abi, arg_type);
+                Auto arg_abi = abi_of_obj(abi, arg_type);
 
                 arg_stack_offset += padding_to_align(arg_stack_offset, max(abi->stack_arg_min_align, arg_abi.align));
 
