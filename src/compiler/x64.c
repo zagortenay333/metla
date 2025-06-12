@@ -756,7 +756,7 @@ static Void rewrite_branch_ops (SirX64 *x64) {
                 case CC_G:  sir_op_set_value(x64->fn, branch, (Value){ .u8 = CC_A });  break;
                 case CC_NL: sir_op_set_value(x64->fn, branch, (Value){ .u8 = CC_NB }); break;
                 case CC_NG: sir_op_set_value(x64->fn, branch, (Value){ .u8 = CC_NA }); break;
-                default: break;
+                default:    sir_op_set_value(x64->fn, branch, (Value){ .u8 = cc }); break;
                 }
             } else {
                 sir_op_set_value(x64->fn, branch, (Value){ .u8 = cc });
