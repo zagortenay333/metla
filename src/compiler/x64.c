@@ -681,27 +681,11 @@ static Void rewrite_branch_ops (SirX64 *x64) {
         assert_dbg(! ARRAY_ITER_DONE); // Last block must be the EXIT_BLOCK which has no successors
         assert_dbg(array_get_last(&block->ops)->tag == SIR_OP_BRANCH);
 
-        Auto cc               = CC_O;
-        Auto branch           = array_get_last(&block->ops);
-        Auto cond             = array_get(&branch->args, 0);
-        Auto next_block       = array_get(ARRAY, ARRAY_IDX + 1);
-        Auto op_before_branch = block->ops.count > 1 ? array_get(&block->ops, block->ops.count - 2) : 0;
+        Auto branch     = array_get_last(&block->ops);
+        Auto next_block = array_get(ARRAY, ARRAY_IDX + 1);
 
         if (next_block == array_get(&block->succs, 0)) {
             branch->tag = SIR_OP_X64_CMP_0_JE;
-
-            if (cond->users.count == 1 && cond == op_before_branch) {
-                switch (cond->tag) {
-                case SIR_OP_NOT:           cc = CC_NE; break;
-                case SIR_OP_EQUAL:         cc = CC_NE; break;
-                case SIR_OP_NOT_EQUAL:     cc = CC_E;  break;
-                case SIR_OP_LESS:          cc = CC_GE; break;
-                case SIR_OP_LESS_EQUAL:    cc = CC_G;  break;
-                case SIR_OP_GREATER:       cc = CC_LE; break;
-                case SIR_OP_GREATER_EQUAL: cc = CC_L;  break;
-                default: break;
-                }
-            }
         } else {
             // One of the successors of the current block must
             // be the next one in the list. This is ensured by
@@ -711,56 +695,7 @@ static Void rewrite_branch_ops (SirX64 *x64) {
             // jump instead of having to emit an unconditional
             // jump as well.
             assert_dbg(next_block == array_get(&block->succs, 1));
-
             branch->tag = SIR_OP_X64_CMP_0_JNE;
-
-            if (cond->users.count == 1 && cond == op_before_branch) {
-                switch (cond->tag) {
-                case SIR_OP_NOT:           cc = CC_E;  break;
-                case SIR_OP_EQUAL:         cc = CC_E;  break;
-                case SIR_OP_NOT_EQUAL:     cc = CC_NE; break;
-                case SIR_OP_LESS:          cc = CC_L;  break;
-                case SIR_OP_LESS_EQUAL:    cc = CC_LE; break;
-                case SIR_OP_GREATER:       cc = CC_G;  break;
-                case SIR_OP_GREATER_EQUAL: cc = CC_GE; break;
-                default: break;
-                }
-            }
-        }
-
-        if (cc != CC_O) {
-            // The cmp instruction stores it's result in the flags
-            // register. This means that if the user of this result
-            // is far away, one must emit a set instruction which
-            // stores this result into a general purpose register.
-            //
-            // Here we have a special case. The branch op is the only
-            // user of the condition, and the condition appears right
-            // before the branch. Also the condition op is one of the
-            // simple ones like SIR_OP_NOT.
-            //
-            // We rewrite the condition op in-place to a cmp, and we
-            // rewrite the branch op into a jcc instruction. This way
-            // we don't have to emit a set instruction.
-
-            cond->tag   = (cond->tag == SIR_OP_NOT) ? SIR_OP_X64_CMP_0 : SIR_OP_X64_CMP;
-            cond->type  = array_get(&cond->args, 0)->type;
-            cond->flags = 0;
-
-            branch->tag = SIR_OP_X64_JCC;
-            sir_op_remove_args(branch);
-
-            if (cond->type->tag == TYPE_INT && !((TypeInt*)cond->type)->is_signed) {
-                switch (cc) {
-                case CC_L:  sir_op_set_value(x64->fn, branch, (Value){ .u8 = CC_B });  break;
-                case CC_G:  sir_op_set_value(x64->fn, branch, (Value){ .u8 = CC_A });  break;
-                case CC_NL: sir_op_set_value(x64->fn, branch, (Value){ .u8 = CC_NB }); break;
-                case CC_NG: sir_op_set_value(x64->fn, branch, (Value){ .u8 = CC_NA }); break;
-                default:    sir_op_set_value(x64->fn, branch, (Value){ .u8 = cc }); break;
-                }
-            } else {
-                sir_op_set_value(x64->fn, branch, (Value){ .u8 = cc });
-            }
         }
     }
 }
@@ -1213,13 +1148,6 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         Auto jump_target = array_find_get(&op->block->succs, IT != next_block);
         emit_cmp_r0(astr, reg_size_of(abi, op->type), in0);
         emit_jcc(astr, CC_NE, 1);
-        ADD_RELOC(jump_target, true);
-    } break;
-
-    case SIR_OP_X64_JCC: {
-        ConditionCode cc = sir_op_get_value(x64->fn, op).u8;
-        Auto jump_target = array_find_get(&op->block->succs, IT != next_block);
-        emit_jcc(astr, cc, 1);
         ADD_RELOC(jump_target, true);
     } break;
 

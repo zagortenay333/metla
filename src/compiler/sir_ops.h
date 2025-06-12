@@ -110,7 +110,6 @@ X(SIR_OP_REG_STORE, 1, 0, 0, 0) // a0=(SirOp being loaded or link or 0) ir0=(reg
 // =============================================================================
 // These ops are x64 specific:
 // =============================================================================
-X(SIR_OP_X64_JCC, 0, 0, 0, 0) // Conditional jump. Value.U8=(condition code)
 X(SIR_OP_X64_CMP, 0, 0, 2, 0) // "cmp a0 a1"
 X(SIR_OP_X64_CMP_0, 0, 0, 1, 0) // "cmp a0"
 X(SIR_OP_X64_CMP_0_JE, 0, 0, 1, 0) // "cmp a0 0; je"

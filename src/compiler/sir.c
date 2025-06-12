@@ -1293,7 +1293,7 @@ static Void emit_into_compound (Builder *builder, Ast *node, SirOp *base, U32 of
             Auto op = emit(builder, n->expr);
             emit_store(builder->fn, builder->block, op->type, base, op, offset + abi->slice_data_offset);
 
-            U32 count = 0;
+            U32 count = 0; // @todo This has to be a U64.
 
             if (from->tag == TYPE_POINTER) from = cast(TypePointer*, from)->pointee;
 

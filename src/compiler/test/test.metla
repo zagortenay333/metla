@@ -3,13 +3,18 @@ fn print (str: Slice(U8)) {
     linux.write(1, str.data, str.count);
 }
 
-fn: #ir1 println (str: Slice(U8)) {
+fn println (str: Slice(U8)) {
     print(str);
     print("\n");
 }
 
-fn main {
-    println("Hello World!");
+fn: #ir1 main {
+    var i = 0xdeadbeef;
+    var n = 10;
+    if i >= n {
+        println("Hello World!");
+        i += 1;
+    }
 }
 
 // This tests the poly value feature "n$":
