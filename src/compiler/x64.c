@@ -1140,14 +1140,14 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
     case SIR_OP_X64_CMP_0_JE: {
         Auto jump_target = array_find_get(&op->block->succs, IT != next_block);
         emit_cmp_r0(astr, reg_size_of(abi, op->type), in0);
-        emit_jcc(astr, CC_E, 1);
+        emit_jcc(astr, CC_NE, 1);
         ADD_RELOC(jump_target, true);
     } break;
 
     case SIR_OP_X64_CMP_0_JNE: {
         Auto jump_target = array_find_get(&op->block->succs, IT != next_block);
         emit_cmp_r0(astr, reg_size_of(abi, op->type), in0);
-        emit_jcc(astr, CC_NE, 1);
+        emit_jcc(astr, CC_E, 1);
         ADD_RELOC(jump_target, true);
     } break;
 
@@ -1180,9 +1180,9 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
 }
 
 static Void emit_fn (SirX64 *x64) {
-    Auto astr  = &x64->elf.text_section.astr;
-    Auto fn  = x64->fn;
-    Auto elf = &x64->elf;
+    Auto astr = &x64->elf.text_section.astr;
+    Auto fn   = x64->fn;
+    Auto elf  = &x64->elf;
 
     // Emit preamble:
     elf_add_symbol(elf, fn->ast, &elf->text_section, astr->count);
@@ -1198,18 +1198,19 @@ static Void emit_fn (SirX64 *x64) {
 
         if (block->succs.count == 1) {
             Auto succ = array_get(&block->succs, 0);
-
             if (succ != next_block) {
                 emit_jmp_rel(astr, 1);
                 elf_add_reloc(elf, true, succ, &elf->text_section, astr->count, 4, 0);
             }
         }
-    }
 
-    // Emit postamble:
-    emit_add_ri(astr, W64, RSP, sir_get_frame_size(x64->frame) - (8 * x64->ra->used_callee_saved_regs.count));
-    array_iter_back (reg, &x64->ra->used_callee_saved_regs) emit_pop(astr, sir_reg_id(reg));
-    emit_ret(astr);
+        if (block->tag == SIR_BLOCK_EXIT) {
+            // Emit postamble:
+            emit_add_ri(astr, W64, RSP, sir_get_frame_size(x64->frame) - (8 * x64->ra->used_callee_saved_regs.count));
+            array_iter_back (reg, &x64->ra->used_callee_saved_regs) emit_pop(astr, sir_reg_id(reg));
+            emit_ret(astr);
+        }
+    }
 }
 
 // This start function only works for sysV.

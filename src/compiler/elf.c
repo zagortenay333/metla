@@ -114,6 +114,8 @@ static Void patch_exe (Elf *elf, String exe) {
                 ptr[5]  = (U8)(val >> 40);
                 ptr[6]  = (U8)(val >> 48);
                 ptr[7]  = (U8)(val >> 56);
+
+
             }
 
             break;
