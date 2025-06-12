@@ -5,12 +5,10 @@ fn print (str: Slice(U8)) {
 
 fn println (str: Slice(U8)) {
     print(str);
-    print("\n");
 }
 
 fn: #ir1 main {
-    var x = 2;
-    if x == 2 do print("Hello\n");
+    println("Hello World!\n");
 }
 
 // This tests the poly value feature "n$":
