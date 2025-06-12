@@ -1552,13 +1552,11 @@ static SirOp *emit (Builder *builder, Ast *node) {
         connect_blocks(builder->block, continue_block);
         set_current_block(builder, continue_block);
 
-        if ((n->cond->tag != AST_BOOL_LITERAL) || !cast(AstBoolLiteral*, n->cond)->val) {
-            Auto cond = emit(builder, n->cond);
-            emit_branch(builder->fn, builder->block, sem_get_type(sem, n->cond), cond);
-            connect_blocks(builder->block, break_block);
-        }
+        Auto cond = emit(builder, n->cond);
+        emit_branch(builder->fn, builder->block, sem_get_type(sem, n->cond), cond);
 
         connect_blocks(builder->block, start_block);
+        connect_blocks(builder->block, break_block);
 
         start_block->idom = builder->block;
         break_block->idom = builder->block;

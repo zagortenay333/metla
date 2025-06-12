@@ -672,28 +672,20 @@ Abi *x64_abi_new (Mem *mem, Sem *sem) {
 // a CMP and JCC pair. This is the only form of "lowering" we
 // do in this IR right now.
 //
-// This function assumes that the blocks have been sorted in
-// reverse postorder.
+// We assume that the blocks array is sorted in such a way
+// that one of 2 successors of a block must follow it.
 static Void rewrite_branch_ops (SirX64 *x64) {
     array_iter (block, &x64->fn->blocks) {
         if (block->succs.count != 2) continue;
 
-        assert_dbg(! ARRAY_ITER_DONE); // Last block must be the EXIT_BLOCK which has no successors
-        assert_dbg(array_get_last(&block->ops)->tag == SIR_OP_BRANCH);
-
         Auto branch     = array_get_last(&block->ops);
         Auto next_block = array_get(ARRAY, ARRAY_IDX + 1);
+
+        assert_dbg(branch->tag == SIR_OP_BRANCH);
 
         if (next_block == array_get(&block->succs, 0)) {
             branch->tag = SIR_OP_X64_CMP_0_JE;
         } else {
-            // One of the successors of the current block must
-            // be the next one in the list. This is ensured by
-            // sorting the blocks in reverse postorder.
-            //
-            // This way we only have to emit one conditional
-            // jump instead of having to emit an unconditional
-            // jump as well.
             assert_dbg(next_block == array_get(&block->succs, 1));
             branch->tag = SIR_OP_X64_CMP_0_JNE;
         }
@@ -1140,14 +1132,14 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
     case SIR_OP_X64_CMP_0_JE: {
         Auto jump_target = array_find_get(&op->block->succs, IT != next_block);
         emit_cmp_r0(astr, reg_size_of(abi, op->type), in0);
-        emit_jcc(astr, CC_NE, 1);
+        emit_jcc(astr, CC_E, 1);
         ADD_RELOC(jump_target, true);
     } break;
 
     case SIR_OP_X64_CMP_0_JNE: {
         Auto jump_target = array_find_get(&op->block->succs, IT != next_block);
         emit_cmp_r0(astr, reg_size_of(abi, op->type), in0);
-        emit_jcc(astr, CC_E, 1);
+        emit_jcc(astr, CC_NE, 1);
         ADD_RELOC(jump_target, true);
     } break;
 

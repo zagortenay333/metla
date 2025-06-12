@@ -8,7 +8,7 @@ fn println (str: Slice(U8)) {
     print("\n");
 }
 
-fn: #ir1 main {
+fn: #ir0 main {
     var i = 1;
     var n = 10;
     while i < n {
@@ -333,12 +333,6 @@ fn test20 {
                         continues = (hit=inner, miss=outer..)
                     ) body;
                 }
-            }
-        }
-
-        fn baz -> I32 {
-            iter: {
-                return 32;
             }
         }
 
