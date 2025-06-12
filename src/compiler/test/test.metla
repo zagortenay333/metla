@@ -1,12 +1,16 @@
-fn print_hello {
+fn print (str: Slice(U8)) {
     import "%stdlib/linux";
-    var x: Slice(U8) = ['h', 'e', 'l', 'l', 'o', '\n'];
-    linux.write(1, x.data, x.count);
+    linux.write(1, str.data, str.count);
+}
+
+fn println (str: Slice(U8)) {
+    print(str);
+    print("\n");
 }
 
 fn: #ir1 main {
     var x = 2;
-    if x == 2 do print_hello();
+    if x == 2 do print("Hello\n");
 }
 
 // This tests the poly value feature "n$":

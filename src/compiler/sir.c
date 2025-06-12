@@ -1292,7 +1292,17 @@ static Void emit_into_compound (Builder *builder, Ast *node, SirOp *base, U32 of
         case AST_CAST_SLICE: {
             Auto op = emit(builder, n->expr);
             emit_store(builder->fn, builder->block, op->type, base, op, offset + abi->slice_data_offset);
-            U32 count = (n->expr->tag == AST_TUPLE) ? cast(AstTuple*, n->expr)->fields.count : cast(TypeArray*, from)->length;
+
+            U32 count = 0;
+
+            if (from->tag == TYPE_POINTER) from = cast(TypePointer*, from)->pointee;
+
+            switch (from->tag) {
+            case TYPE_TUPLE: count = cast(TypeTuple*, from)->node->fields.count; break;
+            case TYPE_ARRAY: count = cast(TypeArray*, from)->length; break;
+            default:         badpath;
+            }
+
             Auto count_op = emit_const_primitive(builder->fn, builder->block, types->type_U32, (Value){ .u32 = count });
             emit_store(builder->fn, builder->block, types->type_U32, base, count_op, offset + abi->slice_count_offset);
         } break;
