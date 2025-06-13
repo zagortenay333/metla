@@ -89,6 +89,7 @@ Void elf_add_reloc (Elf *elf, Bool is_relative, Void *id, ElfSection *section, U
     }));
 }
 
+// @todo Quadratic algo here...
 static Void patch_exe (Elf *elf, String exe) {
     array_iter (reloc, &elf->relocations, *) {
         array_iter (symbol, &elf->symbols, *) {

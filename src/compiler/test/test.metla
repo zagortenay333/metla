@@ -1,6 +1,7 @@
+import "%stdlib/linux";
+
 fn print (str: Slice(U8)) {
-    import "%stdlib/linux";
-    linux.write(1, str.data, str.count);
+    linux.write(linux.stdout, str.data, str.count);
 }
 
 fn println (str: Slice(U8)) {

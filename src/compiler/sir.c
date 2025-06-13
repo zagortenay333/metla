@@ -1344,9 +1344,8 @@ static SirOp *emit_lvalue (Builder *builder, Ast *node) {
         assert_dbg(idx_type->tag == TYPE_INT);
         assert_dbg(cast(TypeInt*, idx_type)->bitwidth == 64);
 
-        abi_of_obj(builder->abi, sem_get_type(sem, n->lhs)); // Ensure field offsets computed.
-
         if (target) {
+            abi_of_obj(builder->abi, sem_get_type(sem, n->lhs)); // Ensure field offsets computed.
             Auto offset = abi_offset(builder->abi, target);
             return emit_offset(builder->fn, builder->block, type, base, offset);
         } else {
@@ -1360,9 +1359,8 @@ static SirOp *emit_lvalue (Builder *builder, Ast *node) {
         Auto t = sem_get_type(sem, n->lhs);
         Auto target = n->sem_edge;
 
-        abi_of_obj(builder->abi, t); // Ensure field offsets computed.
-
         if (t->tag == TYPE_STRUCT || t->tag == TYPE_TUPLE) {
+            abi_of_obj(builder->abi, t); // Ensure field offsets computed.
             Auto offset = abi_offset(builder->abi, target);
             Auto base   = emit(builder, n->lhs);
             return emit_offset(builder->fn, builder->block, sem_get_type(sem, target), base, offset);
@@ -1860,7 +1858,8 @@ static SirOp *emit (Builder *builder, Ast *node) {
             Auto lvalue = emit_lvalue(builder, node);
             return try_emit_load(builder, lvalue);
         } else if (t->tag == TYPE_MISC && cast(TypeMisc*, t)->node->tag == AST_IMPORT) {
-            return emit_global_object(builder->fn, builder->block, target);
+            Auto lvalue = emit_lvalue(builder, node);
+            return try_emit_load(builder, lvalue);
         } else {
             return emit(builder, target);
         }

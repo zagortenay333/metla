@@ -3996,15 +3996,15 @@ Sem *sem_new (Interns *interns, Mem *mem) {
             add_to_check_list(sem, n, sem->autoimports);\
             set_type(n, t);\
             sem->core_types.type_##N = t;\
-            scope_add(sem, sem->autoimports, intern_cstr(sem->interns, #N), n, n); }
-
+            scope_add(sem, sem->autoimports, intern_cstr(sem->interns, #N), n, n);\
+        }
             EACH_BUILTIN_TYPE(X)
         #undef X
 
         #define X(N, S, W) {\
             cast(TypeInt*, sem->core_types.type_##N)->bitwidth  = W;\
-            cast(TypeInt*, sem->core_types.type_##N)->is_signed = S; }
-
+            cast(TypeInt*, sem->core_types.type_##N)->is_signed = S;\
+        }
             EACH_BUILTIN_INT_TYPE(X)
         #undef X
 
