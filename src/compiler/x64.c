@@ -1255,18 +1255,21 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
     switch (value.ast->tag) {
     case AST_FN: {
         assert_dbg(node->tag == AST_IDENT);
-        elf_add_reloc(&x64->elf, false, value.ast, &x64->elf.data_section, astr->count, 8, 0);
         astr_push_u64(astr, 0);
+        elf_add_reloc(&x64->elf, false, value.ast, &x64->elf.data_section, astr->count, 8, 0);
     } break;
 
     case AST_ADDRESS_OF: {
         Auto op = ((AstBaseUnary*)value.ast)->op;
-        if (op->tag == AST_IDENT) op = sem_get_const(sem, op).ast;
 
-        elf_add_reloc(&x64->elf, false, op, &x64->elf.data_section, astr->count, 8, 0);
+        if (op->tag == AST_IDENT) {
+            op = sem_get_const(sem, op).ast;
+        } else {
+            array_push(nested_globals, op);
+        }
+
         astr_push_u64(astr, 0);
-
-        if (op->tag != AST_VAR_DEF) array_push(nested_globals, op);
+        elf_add_reloc(&x64->elf, false, op, &x64->elf.data_section, astr->count, 8, 0);
     } break;
 
     case AST_CAST: {
@@ -1279,13 +1282,13 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
         assert_dbg(abi->slice_data_offset == 8);
 
         switch (n->tag) {
-        case AST_CAST_ANY:   astr_push_u32(astr, t->id); break;
-        case AST_CAST_SLICE: astr_push_u32(astr, (n->expr->tag == AST_ARRAY_LITERAL) ? ((TypeArray*)t)->length : ((AstTuple*)n->expr)->fields.count); break;
-        default: badpath;
+        case AST_CAST_ANY:   astr_push_u64(astr, t->id); break;
+        case AST_CAST_SLICE: astr_push_u64(astr, (n->expr->tag == AST_ARRAY_LITERAL) ? ((TypeArray*)t)->length : ((AstTuple*)n->expr)->fields.count); break;
+        default:             badpath;
         }
 
-        elf_add_reloc(&x64->elf, false, n->expr, &x64->elf.data_section, astr->count, 8, 0);
         astr_push_u64(astr, 0);
+        elf_add_reloc(&x64->elf, false, n->expr, &x64->elf.data_section, astr->count, 8, 0);
     } break;
 
     case AST_ARRAY_LITERAL: {

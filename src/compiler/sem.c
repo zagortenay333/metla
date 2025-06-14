@@ -1013,11 +1013,6 @@ static Ast *alloc_caller_struct (Sem *sem, Ast *caller) {
 static Void implicit_cast (Sem *sem, Ast **pn, Ast *to, Type *to_type) {
     Ast *n = *pn;
 
-    if (to_type->tag == TYPE_TUPLE) {
-        print_stack_trace();
-        sem_print_node_out(sem, *pn);
-    }
-
     assert_dbg(! is_tvar_type(to_type));
     assert_dbg(! (n->flags & AST_IN_POLY_ARG_POSITION));
     assert_dbg((n != sem->match.dummy1) && (n != sem->match.dummy2));

@@ -468,9 +468,20 @@ static Void print_block (Printer *printer, SirBlock *block) {
         printer->max_op_name_len = 0;
 
         array_iter (op, &block->ops) {
-            if ((op->tag == SIR_OP_PHI || op->tag == SIR_OP_PHI_MEM) && !printer->fn->in_ssa_form) continue;
             Auto len = strlen(sir_op_tag_to_str[op->tag]);
             if (len > printer->max_op_name_len) printer->max_op_name_len = len;
+        }
+
+        if (printer->fn->in_ssa_form) {
+            if (block->mem_phi) {
+                Auto len = strlen(sir_op_tag_to_str[block->mem_phi->tag]);
+                if (len > printer->max_op_name_len) printer->max_op_name_len = len;
+            }
+
+            array_iter (op, &block->phis) {
+                Auto len = strlen(sir_op_tag_to_str[op->tag]);
+                if (len > printer->max_op_name_len) printer->max_op_name_len = len;
+            }
         }
 
         printer->max_op_name_len -= strlen("SIR_OP_");
@@ -1102,6 +1113,7 @@ static SirOp *emit_unop (Builder *builder, AstBaseUnary *node, SirOpTag tag) {
 static SirOp *try_emit_load (Builder *builder, SirOp *from) {
     if (from->type->tag != TYPE_POINTER) return from;
     Auto pointee = cast(TypePointer*, from->type)->pointee;
+    if (pointee->tag == TYPE_FN) return from;
     if (! abi_can_be_in_reg(builder->abi, pointee)) return from;
     return emit_load(builder->fn, builder->block, pointee, from);
 }
