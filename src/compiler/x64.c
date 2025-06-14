@@ -1306,37 +1306,14 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
 
     case AST_TUPLE: {
         Auto n = (AstTuple*)value.ast;
-
-        if (is_top_level) array_increase_count(astr, obj_abi.size, true);
-
-        Auto dummy_ds = *astr;
-        dummy_ds.capacity = UINT32_MAX;
-
-        array_iter (field, &n->fields) {
-            Auto offset    = abi_offset(abi, field);
-            dummy_ds.data  = astr->data + offset;
-            dummy_ds.count = abi_of_obj(abi, sem_get_type(sem, field)).size;
-            emit_global(x64, &dummy_ds, nested_globals, field, false);
-            assert_dbg(dummy_ds.data == (astr->data + offset)); // Should not realloc.
-        }
+        if (is_top_level) array_ensure_capacity(astr, obj_abi.size);
+        array_iter (field, &n->fields) emit_global(x64, astr, nested_globals, field, false);
     } break;
 
     case AST_STRUCT_LITERAL: {
         Auto n = (AstStructLiteral*)value.ast;
-
-        if (is_top_level) array_increase_count(astr, obj_abi.size, true);
-
-        Auto dummy_astr = *astr;
-        dummy_astr.capacity = UINT32_MAX;
-
-        array_iter (init, &n->inits) {
-            Auto target      = cast(AstStructLitInit*, init)->sem_edge;
-            Auto offset      = abi_offset(abi, target);
-            dummy_astr.data  = astr->data + offset;
-            dummy_astr.count = abi_of_obj(abi, sem_get_type(sem, target)).size;
-            emit_global(x64, &dummy_astr, nested_globals, init->val, false);
-            assert_dbg(dummy_astr.data == (astr->data + offset)); // Must not realloc.
-        }
+        if (is_top_level) array_ensure_capacity(astr, obj_abi.size);
+        array_iter (init, &n->inits) emit_global(x64, astr, nested_globals, init->val, false);
     } break;
 
     default: badpath;

@@ -9,11 +9,12 @@ fn println (str: Slice(U8)) {
     print("\n");
 }
 
+var x: Slice(U8) = ['h', 'e', 'l', 'l', 'o', '\n'];
 fn: #ir0 main {
     var i = 1;
     var n = 10;
     while i < n {
-        println("Hello World!");
+        println(x);
         i += 1;
     }
 }
