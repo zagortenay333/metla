@@ -9,10 +9,10 @@ fn println (str: Slice(U8)) {
     print("\n");
 }
 
-var x: Slice(U8) = ['h', 'e', 'l', 'l', 'o', '\n'];
+var x: Slice(U8) = ['h', 'e', 'l', 'l', 'o'];
 fn: #ir0 main {
-    var i = 1;
-    var n = 10;
+    var i = 0;
+    var n = x.count;
     while i < n {
         println(x);
         i += 1;
