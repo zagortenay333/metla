@@ -144,10 +144,10 @@ istruct (OpBuf) {
 
 #define ob_set_reg_op(ob, byte, offset_within_byte, reg, rex_bit) ({\
     if (is_extended(reg)) {\
-        ob.rex |= (U8)(rex_bit);\
-        ob.byte |= (U8)(((reg) & 0x7) << (offset_within_byte));\
+        ob.rex |= cast(U8, rex_bit);\
+        ob.byte |= cast(U8, ((reg) & 0x7) << (offset_within_byte));\
     } else {\
-        ob.byte |= (U8)((reg) << (offset_within_byte));\
+        ob.byte |= cast(U8, (reg) << (offset_within_byte));\
     }\
 })
 
@@ -160,11 +160,11 @@ istruct (OpBuf) {
 // and packs them into a byte in that order. You can
 // use it to create a modrm or sib byte.
 inl U8 pack_modrm (U8 mod, RegTag reg, RegTag rm) {
-    return (U8)((mod << 6) | (((U8)reg & 0x7) << 3) | ((U8)rm & 0x7));
+    return cast(U8, (mod << 6) | ((cast(U8, reg) & 0x7) << 3) | (cast(U8, rm) & 0x7));
 }
 
-inl U8       pack_reg_into_op   (U8 op, RegTag reg) { return (U8)(op | ((U8)reg & 0x7)); }
-inl U32      pack_2b            (U8 a, U8 b)        { return (U32)((b << 8) | a); }
+inl U8       pack_reg_into_op   (U8 op, RegTag reg) { return cast(U8, op | (cast(U8, reg) & 0x7)); }
+inl U32      pack_2b            (U8 a, U8 b)        { return cast(U32, (b << 8) | a); }
 inl Bool     is_extended        (RegTag reg)        { return reg >= 8; }
 inl Bool     is_valid_sib_scale (U32 n)             { return n == 8 || n == 4 || n == 2 || n == 1 || n == 0; }
 inl SibScale to_sib_scale       (U32 n)             { assert_dbg(is_valid_sib_scale(n)); return n == 8 ? S8 : n == 4 ? S4 : n == 2 ? S2 : S1; }
@@ -418,15 +418,15 @@ static U64 imm (SirFn *fn, SirOp *op) {
 
     switch (t->tag) {
     case TYPE_ENUM:
-        t = ((TypeEnum*)t)->raw;
+        t = cast(TypeEnum*, t)->raw;
         assert_dbg(t->tag == TYPE_INT);
         through;
     case TYPE_INT:
-        switch (((TypeInt*)t)->bitwidth) {
-        case 8:  return ((TypeInt*)t)->is_signed ? (U64)v.i8  : v.u8;
-        case 16: return ((TypeInt*)t)->is_signed ? (U64)v.i16 : v.u16;
-        case 32: return ((TypeInt*)t)->is_signed ? (U64)v.i32 : v.u32;
-        case 64: return ((TypeInt*)t)->is_signed ? (U64)v.i64 : v.u64;
+        switch (cast(TypeInt*, t)->bitwidth) {
+        case 8:  return cast(TypeInt*, t)->is_signed ? cast(U64, v.i8)  : v.u8;
+        case 16: return cast(TypeInt*, t)->is_signed ? cast(U64, v.i16) : v.u16;
+        case 32: return cast(TypeInt*, t)->is_signed ? cast(U64, v.i32) : v.u32;
+        case 64: return cast(TypeInt*, t)->is_signed ? cast(U64, v.i64) : v.u64;
         default: badpath;
         }
     case TYPE_BOOL:
@@ -478,35 +478,35 @@ static AbiObj get_obj_abi (Abi *abi, Type *type) {
     case TYPE_BOOL:    return (AbiObj){ .align=1, .size=1 };
     case TYPE_FN:      return (AbiObj){ .align=8, .size=8 };
     case TYPE_POINTER: return (AbiObj){ .align=8, .size=8 };
-    case TYPE_ENUM:    return get_obj_abi(abi, ((TypeEnum*)type)->raw);
+    case TYPE_ENUM:    return get_obj_abi(abi, cast(TypeEnum*, type)->raw);
 
     case TYPE_FLOAT: {
-        Auto t = (TypeFloat*)type;
+        Auto t = cast(TypeFloat*, type);
         Auto n = t->bitwidth / 8;
         return (AbiObj){ .align=n, .size=n };
     }
 
     case TYPE_INT: {
-        Auto t = (TypeInt*)type;
+        Auto t = cast(TypeInt*, type);
         Auto n = t->bitwidth / 8;
         return (AbiObj){ .align=n, .size=n };
     }
 
     case TYPE_ARRAY: {
-        Auto t  = (TypeArray*)type;
+        Auto t  = cast(TypeArray*, type);
         Auto r  = get_obj_abi(abi, t->element);
         r.size *= t->length;
         return r;
     }
 
     case TYPE_TUPLE: {
-        Auto a = (X64Abi*)abi;
+        Auto a = cast(X64Abi*, abi);
 
         AbiObj r = {};
         Auto found = map_get(&a->obj_abis, type->id, &r);
         if (found) return r;
 
-        Auto n = ((TypeTuple*)type)->node;
+        Auto n = cast(TypeTuple*, type)->node;
 
         array_iter (field_ast, &n->fields) {
             Auto field_type = sem_get_type(abi->sem, field_ast);
@@ -527,15 +527,15 @@ static AbiObj get_obj_abi (Abi *abi, Type *type) {
     case TYPE_STRUCT: {
         tmem_new(tm);
 
-        Auto a = (X64Abi*)abi;
+        Auto a = cast(X64Abi*, abi);
         AbiObj r = {};
         Auto found = map_get(&a->obj_abis, type->id, &r);
         if (found) return r;
 
-        Auto t = (TypeStruct*)type;
+        Auto t = cast(TypeStruct*, type);
         Auto i = sem_iter_new(tm, abi->sem, &t->node->members);
 
-        if (((Ast*)t->node)->flags & AST_IS_UNION) {
+        if (cast(Ast*, t->node)->flags & AST_IS_UNION) {
             while (sem_iter_next(i)) {
                 Auto field_type = sem_get_type(abi->sem, i->node);
                 Auto field_abi  = get_obj_abi(abi, field_type);
@@ -572,7 +572,7 @@ static AbiObj get_obj_abi (Abi *abi, Type *type) {
 }
 
 static U32 get_offset (Abi *abi, Ast *field) {
-    return map_get_assert(&((X64Abi*)abi)->field_offsets, field->id);
+    return map_get_assert(&cast(X64Abi*, abi)->field_offsets, field->id);
 }
 
 static RegWidth reg_size_of (Abi *abi, Type *type) {
@@ -606,8 +606,8 @@ static Bool can_be_in_reg (Abi *abi, Type *type) {
 }
 
 static AbiFn *get_fn_abi (Abi *abi, Mem *mem, TypeFn *type) {
-    Auto a = (X64Abi*)abi;
-    Auto type_id = ((Type*)type)->id;
+    Auto a = cast(X64Abi*, abi);
+    Auto type_id = cast(Type*, type)->id;
 
     Auto fn_abi = map_get_ptr(&a->fn_abis, type_id);
     if (fn_abi) return fn_abi;
@@ -665,7 +665,7 @@ Abi *x64_abi_new (Mem *mem, Sem *sem) {
     abi->pub.get_offset    = get_offset;
     abi->pub.can_be_in_reg = can_be_in_reg;
 
-    return (Abi*)abi;
+    return cast(Abi*, abi);
 }
 
 // This function replaces all SIR_OP_BRANCH instructions with
@@ -708,7 +708,7 @@ static Void init_reg_constraints (SirRegAlloc *ra, SirOp *op, SirOpRegConstraint
         Auto inputs      = sir_op_get_inputs(op);
         Auto callee_ast  = sir_op_get_value(ra->fn, op).ast;
         Auto callee_type = sem_get_type(ra->fn->sem, callee_ast);
-        Auto callee_abi  = get_fn_abi(x64->abi, x64->mem, (TypeFn*)callee_type);
+        Auto callee_abi  = get_fn_abi(x64->abi, x64->mem, cast(TypeFn*, callee_type));
 
         if (! (op->flags & SIR_OP_IS_DIRECT_CALL)) {
             inputs.count--; // Skip last argument in loop below.
@@ -780,7 +780,7 @@ static Void init_reg_constraints (SirRegAlloc *ra, SirOp *op, SirOpRegConstraint
     } break;
 
     case SIR_OP_INDEX: {
-        Auto t = ((TypePointer*)op->type)->pointee;
+        Auto t = cast(TypePointer*, op->type)->pointee;
         Auto s = abi_of_obj(x64->abi, t).size;
         if (! is_valid_sib_scale(s)) op->flags |= SIR_OP_USES_TMP_REG1;
     } break;
@@ -880,7 +880,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
             // the value into the caller's stack.
             Auto type = array_get(&args, 0)->type;
             assert_dbg(type->tag == TYPE_POINTER);
-            Auto result_type = ((TypePointer*)type)->pointee;
+            Auto result_type = cast(TypePointer*, type)->pointee;
             Auto result_size = abi_of_obj(abi, result_type).size;
             emit_memcpy(&x64->elf, astr, TMP0, in0, in1, 0, 0, result_size, 0);
         }
@@ -897,7 +897,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         Auto args            = sir_op_get_inputs(op);
         Auto callee_ast      = sir_op_get_value(x64->fn, op).ast;
         Auto callee_type     = sem_get_type(x64->fn->sem, callee_ast);
-        Auto callee_abi      = get_fn_abi(x64->abi, x64->mem, (TypeFn*)callee_type);
+        Auto callee_abi      = get_fn_abi(x64->abi, x64->mem, cast(TypeFn*, callee_type));
 
         if (! (op->flags & SIR_OP_IS_DIRECT_CALL)) args.count--; // To skip the last arg (the fn pointer) in the loop below.
 
@@ -955,7 +955,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
     } break;
 
     case SIR_OP_INDEX: {
-        Auto element_type = ((TypePointer*)op->type)->pointee;
+        Auto element_type = cast(TypePointer*, op->type)->pointee;
         Auto element_size = abi_of_obj(abi, element_type).size;
 
         if (is_valid_sib_scale(element_size)) {
@@ -981,7 +981,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         emit_lea(astr, self, memop(RSP, NIL, S1, stack_slot));
 
         if (op->flags & SIR_OP_DEFAULT_INITIALIZED) {
-            Auto type = ((TypePointer*)op->type)->pointee;
+            Auto type = cast(TypePointer*, op->type)->pointee;
             Auto size = abi_of_obj(abi, type).size;
             emit_memset_zero(astr, self, size);
         }
@@ -998,7 +998,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
             assert_dbg(op->type->tag == TYPE_INT);
             assert_dbg(from_type->tag == TYPE_INT);
 
-            if (((TypeInt*)from_type)->is_signed) {
+            if (cast(TypeInt*, from_type)->is_signed) {
                 emit_movsx_rr(astr, to_width, from_width, self, in0);
             } else {
                 emit_movzx_rr(astr, to_width, from_width, self, in0);
@@ -1017,14 +1017,14 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
     } break;
 
     case SIR_OP_VALUE_ADDRESS: {
-        Auto value_type = ((TypePointer*)op->type)->pointee;
+        Auto value_type = cast(TypePointer*, op->type)->pointee;
         Auto stack_slot = sir_get_object_stack_slot(x64->frame, op);
         emit_lea(astr, self, memop(RSP, NIL, S1, stack_slot));
         emit_mov_mr(astr, reg_size_of(abi, value_type), memop(self, NIL, S1, 0), in0);
     } break;
 
     case SIR_OP_LINUX_SYSCALL: {
-        Auto ast = (AstFnLinux*)sir_op_get_value(x64->fn, op).ast;
+        Auto ast = cast(AstFnLinux*, sir_op_get_value(x64->fn, op).ast);
         emit_mov_ri(astr, W32, RAX, ast->num);
         emit_syscall(astr);
     } break;
@@ -1059,7 +1059,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         Auto t0     = array_get(&inputs, 0)->type;
         Auto t1     = array_get(&inputs, 1)->type;
 
-        if (t0->tag == TYPE_INT && ((TypeInt*)t0)->is_signed) {
+        if (t0->tag == TYPE_INT && cast(TypeInt*, t0)->is_signed) {
             switch (reg_size_of(abi, t0)) {
             case W8:  emit_cwd(astr); break;
             case W32: emit_cdq(astr); break;
@@ -1083,7 +1083,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         Auto arg0 = array_get(&op->args, 0);
         assert_dbg(arg0->type->tag == TYPE_INT);
         emit_cmp_rr(astr, reg_size_of(abi, arg0->type), in0, in1);
-        ConditionCode cc = ((TypeInt*)arg0->type)->is_signed ? CC_L : CC_B;
+        ConditionCode cc = cast(TypeInt*, arg0->type)->is_signed ? CC_L : CC_B;
         emit_set(astr, cc, self);
     } break;
 
@@ -1091,7 +1091,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         Auto arg0 = array_get(&op->args, 0);
         assert_dbg(arg0->type->tag == TYPE_INT);
         emit_cmp_rr(astr, reg_size_of(abi, arg0->type), in0, in1);
-        ConditionCode cc = ((TypeInt*)arg0->type)->is_signed ? CC_LE : CC_BE;
+        ConditionCode cc = cast(TypeInt*, arg0->type)->is_signed ? CC_LE : CC_BE;
         emit_set(astr, cc, self);
     } break;
 
@@ -1099,7 +1099,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         Auto arg0 = array_get(&op->args, 0);
         assert_dbg(arg0->type->tag == TYPE_INT);
         emit_cmp_rr(astr, reg_size_of(abi, arg0->type), in0, in1);
-        ConditionCode cc = ((TypeInt*)arg0->type)->is_signed ? CC_G : CC_A;
+        ConditionCode cc = cast(TypeInt*, arg0->type)->is_signed ? CC_G : CC_A;
         emit_set(astr, cc, self);
     } break;
 
@@ -1107,7 +1107,7 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         Auto arg0 = array_get(&op->args, 0);
         assert_dbg(arg0->type->tag == TYPE_INT);
         emit_cmp_rr(astr, reg_size_of(abi, arg0->type), in0, in1);
-        ConditionCode cc = ((TypeInt*)arg0->type)->is_signed ? CC_GE : CC_AE;
+        ConditionCode cc = cast(TypeInt*, arg0->type)->is_signed ? CC_GE : CC_AE;
         emit_set(astr, cc, self);
     } break;
 
@@ -1260,7 +1260,7 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
     } break;
 
     case AST_ADDRESS_OF: {
-        Auto op = ((AstBaseUnary*)value.ast)->op;
+        Auto op = cast(AstBaseUnary*, value.ast)->op;
 
         if (op->tag == AST_IDENT) {
             op = sem_get_const(sem, op).ast;
@@ -1273,7 +1273,7 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
     } break;
 
     case AST_CAST: {
-        Auto n = (AstCast*)value.ast;
+        Auto n = cast(AstCast*, value.ast);
         Auto t = sem_get_type(sem, n->expr);
 
         array_push(nested_globals, n->expr);
@@ -1283,7 +1283,7 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
 
         switch (n->tag) {
         case AST_CAST_ANY:   astr_push_u64(astr, t->id); break;
-        case AST_CAST_SLICE: astr_push_u64(astr, (n->expr->tag == AST_ARRAY_LITERAL) ? ((TypeArray*)t)->length : ((AstTuple*)n->expr)->fields.count); break;
+        case AST_CAST_SLICE: astr_push_u64(astr, (n->expr->tag == AST_ARRAY_LITERAL) ? cast(TypeArray*, t)->length : cast(AstTuple*, n->expr)->fields.count); break;
         default:             badpath;
         }
 
@@ -1292,26 +1292,26 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
     } break;
 
     case AST_ARRAY_LITERAL: {
-        Auto n = (AstArrayLiteral*)value.ast;
+        Auto n = cast(AstArrayLiteral*, value.ast);
         if (is_top_level) array_ensure_capacity(astr, obj_abi.size);
         array_iter (init, &n->inits) emit_global(x64, astr, nested_globals, init, false);
     } break;
 
     case AST_STRING_LITERAL: {
-        Auto n = (AstStringLiteral*)value.ast;
+        Auto n = cast(AstStringLiteral*, value.ast);
         map_add(&x64->string_literals, n->str, 0);
         astr_push_u64(astr, 1);
         elf_add_reloc(&x64->elf, false, n->str, &x64->elf.data_section, astr->count, 8, 0);
     } break;
 
     case AST_TUPLE: {
-        Auto n = (AstTuple*)value.ast;
+        Auto n = cast(AstTuple*, value.ast);
         if (is_top_level) array_ensure_capacity(astr, obj_abi.size);
         array_iter (field, &n->fields) emit_global(x64, astr, nested_globals, field, false);
     } break;
 
     case AST_STRUCT_LITERAL: {
-        Auto n = (AstStructLiteral*)value.ast;
+        Auto n = cast(AstStructLiteral*, value.ast);
         if (is_top_level) array_ensure_capacity(astr, obj_abi.size);
         array_iter (init, &n->inits) emit_global(x64, astr, nested_globals, init->val, false);
     } break;
@@ -1327,7 +1327,7 @@ static Void emit_globals (SirX64 *x64) {
     array_init(&nested_globals, x64->mem);
 
     array_iter (global, x64->program.globals) {
-        Auto type  = sem_get_type(x64->fn->sem, (Ast*)global);
+        Auto type  = sem_get_type(x64->fn->sem, cast(Ast*, global));
         Auto align = abi_of_obj(x64->abi, type).align;
         astr_push_bytes(astr, 0, padding_to_align(astr->count, align));
         elf_add_symbol(&x64->elf, global, &x64->elf.data_section, astr->count);
@@ -1360,8 +1360,8 @@ Void x64_emit (String exe_file_path, Mem *mem, Abi *abi, Interns *interns, Sem *
     Auto ir_output = str(".ir.dot"); // TODO: Hardcoded path.
 
     array_iter (fn_ast, program.fns) {
-        Bool print_ir_pre_regalloc  = sem_get_attribute(sem, (Ast*)fn_ast, intern_cstr(interns, "ir0"));
-        Bool print_ir_post_regalloc = sem_get_attribute(sem, (Ast*)fn_ast, intern_cstr(interns, "ir1"));
+        Bool print_ir_pre_regalloc  = sem_get_attribute(sem, cast(Ast*, fn_ast), intern_cstr(interns, "ir0"));
+        Bool print_ir_post_regalloc = sem_get_attribute(sem, cast(Ast*, fn_ast), intern_cstr(interns, "ir1"));
 
         x64->fn = sir_fn_new(mem, interns, sem, fn_ast, abi);
         if (print_ir_pre_regalloc) sir_to_dot(x64->fn, mem, ir_output, 0);

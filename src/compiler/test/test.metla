@@ -20,7 +20,7 @@ macro iter_range (it: $, i: U64, n: U64, body: $) {
     }
 }
 
-macro iter_array (it: $, arr: ~Slice($T), body: $) {
+macro iter_slice (it: $, arr: ~Slice($T), body: $) {
     iter_range: (i, 0, arr~.count) {
         var elem = (arr~.data + i*.sizeof(T))~;
         embed: (
@@ -32,11 +32,11 @@ macro iter_array (it: $, arr: ~Slice($T), body: $) {
 
 var x: Slice(U8) = ['h', 'e', 'l', 'l', 'o'];
 fn: #ir0 main {
-    iter_array: (it, ~x) { linux.write(linux.stdout, ~it, 1); print(" "); }
+    iter_slice: (it, ~x) { linux.write(linux.stdout, ~it, 1); print(" "); }
 
     print("\n\n");
 
-    iter_array: (it, ~x) do println(x);
+    iter_slice: (it, ~x) do println(x);
 }
 
 // This tests the poly value feature "n$":
