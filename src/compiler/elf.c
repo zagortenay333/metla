@@ -1,4 +1,3 @@
-#if 1
 #include "compiler/elf.h"
 #include "os/fs.h"
 
@@ -96,25 +95,25 @@ static Void patch_exe (Elf *elf, String exe) {
             if (symbol->id != reloc->id) continue;
 
             if (reloc->is_relative) {
-                I32 off1 = (I32)(reloc->section->sh_addr + reloc->section_offset);
-                I32 off2 = (I32)(symbol->section->sh_addr + symbol->section_offset);
-                I32 val  = off2 - off1 + (I32)reloc->address_offset;
-                U8 *ptr  = (U8*)&exe.data[reloc->section->sh_offset + reloc->section_offset - 4];
-                ptr[0]   = (U8)(val >> 0);
-                ptr[1]   = (U8)(val >> 8);
-                ptr[2]   = (U8)(val >> 16);
-                ptr[3]   = (U8)(val >> 24);
+                I32 off1 = cast(I32, reloc->section->sh_addr + reloc->section_offset);
+                I32 off2 = cast(I32, symbol->section->sh_addr + symbol->section_offset);
+                I32 val  = off2 - off1 + cast(I32, reloc->address_offset);
+                U8 *ptr  = cast(U8*, &exe.data[reloc->section->sh_offset + reloc->section_offset - 4]);
+                ptr[0]   = cast(U8, val >> 0);
+                ptr[1]   = cast(U8, val >> 8);
+                ptr[2]   = cast(U8, val >> 16);
+                ptr[3]   = cast(U8, val >> 24);
             } else {
-                U64 val = (U64)(symbol->section->sh_addr + symbol->section_offset + reloc->address_offset);
-                U8 *ptr = (U8*)&exe.data[reloc->section->sh_offset + reloc->section_offset - 8];
-                ptr[0]  = (U8)(val >> 0);
-                ptr[1]  = (U8)(val >> 8);
-                ptr[2]  = (U8)(val >> 16);
-                ptr[3]  = (U8)(val >> 24);
-                ptr[4]  = (U8)(val >> 32);
-                ptr[5]  = (U8)(val >> 40);
-                ptr[6]  = (U8)(val >> 48);
-                ptr[7]  = (U8)(val >> 56);
+                U64 val = cast(U64, symbol->section->sh_addr + symbol->section_offset + reloc->address_offset);
+                U8 *ptr = cast(U8*, &exe.data[reloc->section->sh_offset + reloc->section_offset - 8]);
+                ptr[0]  = cast(U8, val >> 0);
+                ptr[1]  = cast(U8, val >> 8);
+                ptr[2]  = cast(U8, val >> 16);
+                ptr[3]  = cast(U8, val >> 24);
+                ptr[4]  = cast(U8, val >> 32);
+                ptr[5]  = cast(U8, val >> 40);
+                ptr[6]  = cast(U8, val >> 48);
+                ptr[7]  = cast(U8, val >> 56);
 
 
             }
@@ -271,4 +270,3 @@ Void elf_emit_exe (Elf *elf, String exe_file_path) {
         fs_make_file_executable(exe_file_path);
     }
 }
-#endif

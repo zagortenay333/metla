@@ -144,7 +144,7 @@ istruct (OpBuf) {
 
 #define ob_set_reg_op(ob, byte, offset_within_byte, reg, rex_bit) ({\
     if (is_extended(reg)) {\
-        ob.rex |= cast(U8, rex_bit);\
+        ob.rex  |= cast(U8, rex_bit);\
         ob.byte |= cast(U8, ((reg) & 0x7) << (offset_within_byte));\
     } else {\
         ob.byte |= cast(U8, (reg) << (offset_within_byte));\
