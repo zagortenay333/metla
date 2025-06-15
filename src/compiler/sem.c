@@ -554,8 +554,6 @@ static Value ast_eval (Sem *sem, Ast *node) {
     reach(r);
     #define RETURN(R) { result = (R); goto done; }
 
-    if (node->flags & AST_IS_TYPE) RETURN((Value){.ast=node});
-
     #define biop(op) ({\
         Value c1 = ast_eval(sem, cast(AstBaseBinary*, node)->op1);\
         Value c2 = ast_eval(sem, cast(AstBaseBinary*, node)->op2);\
@@ -649,7 +647,7 @@ static Value ast_eval (Sem *sem, Ast *node) {
     case AST_BITWISE_OR:       RETURN(biop(vm_value_bitor));
     case AST_BITWISE_XOR:      RETURN(biop(vm_value_bitxor));
     case AST_BOOL_LITERAL:     RETURN((Value){ .u8 = cast(AstBoolLiteral*, node)->val });
-    case AST_CALL:             { assert_dbg(cast(AstCall*, node)->sem_edge); RETURN((Value){ .ast = cast(AstCall*, node)->sem_edge}); }
+    case AST_CALL:             RETURN((Value){ .ast = cast(AstCall*, node)->sem_edge });
     case AST_CALL_DEFAULT_ARG: RETURN(ast_eval(sem, cast(AstCallDefaultArg*, node)->arg));
     case AST_DUMMY:            assert_dbg(get_type(node)->flags & TYPE_IS_PRIMITIVE); RETURN((Value){});
     case AST_ENUM:             RETURN((Value){ .ast = node });

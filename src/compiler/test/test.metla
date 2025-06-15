@@ -33,9 +33,7 @@ macro iter_slice (it: $, arr: ~Slice($T), body: $) {
 var x: Slice(U8) = ['h', 'e', 'l', 'l', 'o'];
 fn: #ir0 main {
     iter_slice: (it, ~x) { linux.write(linux.stdout, ~it, 1); print(" "); }
-
     print("\n\n");
-
     iter_slice: (it, ~x) do println(x);
 }
 
