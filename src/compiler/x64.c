@@ -1241,14 +1241,15 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
         return;
     }
 
-    if (! (node->flags & AST_CAN_EVAL_WITHOUT_VM)) {
-        assert_dbg(! sem_type_has_pointers(sem, type));  // TODO: Turn this into a sem error.
-        astr_push_str(astr, (String){ .data=value.ptr, .count=obj_abi.size });
+    if ((node->tag == AST_NIL) || (node->flags & AST_IS_TYPE)) {
+        astr_push_bytes(astr, 0, obj_abi.size);
         return;
     }
 
-    if ((node->tag == AST_NIL) || (node->flags & AST_IS_TYPE)) {
-        astr_push_bytes(astr, 0, obj_abi.size);
+    if (! (node->flags & AST_CAN_EVAL_WITHOUT_VM)) {
+        sem_print_node_out(sem, node);
+        assert_dbg(! sem_type_has_pointers(sem, type));  // @todo Turn this into a sem error.
+        astr_push_str(astr, (String){ .data=value.ptr, .count=obj_abi.size });
         return;
     }
 

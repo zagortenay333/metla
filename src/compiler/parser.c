@@ -1018,7 +1018,8 @@ static Ast *parse_var_def (Parser *par, Bool with_semicolon, Bool with_keyword) 
     if (lex_try_eat(lex, '=')) node->init = parse_expression(par, 0);
     if (!node->constraint && !node->init) lex_eat_this(lex, ':');
     if (with_semicolon) lex_eat_this(lex, ';');
-    if (! node->constraint) mark_standalone_position(par, node->init);
+    if (node->constraint) node->constraint->flags |= AST_CAN_EVAL_WITHOUT_VM;
+    else mark_standalone_position(par, node->init);
 
     return complete_node(par, node);
 }
@@ -1750,8 +1751,7 @@ static Ast *parse_top_statement (Parser *par) {
     } break;
     case TOKEN_VAR: {
         result = parse_var_def(par, true, true);
-        Ast *init = cast(AstVarDef*, result)->init;
-        if (init) init->flags |= AST_MUST_EVAL;
+        result->flags |= AST_MUST_EVAL;
     } break;
     case '.': {
         result = parse_builtin(par);
