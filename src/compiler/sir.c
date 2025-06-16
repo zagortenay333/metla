@@ -1721,13 +1721,7 @@ static SirOp *emit (Builder *builder, Ast *node) {
             // We took the address of a value like: ~42.
             Auto result  = emit(builder, op);
             Auto op_type = sem_get_type(sem, op);
-
-            if (abi_can_be_in_reg(builder->abi, op_type)) {
-                // Turn the value into a stack object.
-                Auto t = sem_get_type(sem, node);
-                result = emit_address_of_value(builder->fn, builder->block, t, result);
-            }
-
+            if (abi_can_be_in_reg(builder->abi, op_type)) result = emit_address_of_value(builder->fn, builder->block, op_type, result);
             return result;
         }
     }

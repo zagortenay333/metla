@@ -33,8 +33,22 @@ macro iter_slice (it: $, arr: ~Slice($T), body: $) {
 var x: Slice(U8) = ['h', 'e', 'l', 'l', 'o'];
 fn: #ir0 main {
     iter_slice: (it, ~x) { linux.write(linux.stdout, ~it, 1); print(" "); }
+
     print("\n\n");
     iter_slice: (it, ~x) do println(x);
+
+    {
+        print("\n");
+        var z = ["asdf", "what"];
+        var y = ~1;
+        println(z[y~]);
+    }
+
+    {
+        print("\n");
+        var z: [1]Slice(U8) = ["asdf",];
+        println(z[0]);
+    }
 }
 
 // This tests the poly value feature "n$":
