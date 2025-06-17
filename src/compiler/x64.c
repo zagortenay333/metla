@@ -914,13 +914,12 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
             Auto arg_type = array_get(&callee_abi->input_types, ARRAY_IDX);
 
             if (reg_abi == ABI_REG_MEM) { // Arg passed on stack.
-                Auto arg_abi                 = abi_of_obj(abi, arg_type);
-                Bool virtual_reg_is_spilled  = (reg_id == NIL);
-                Bool arg_fits_in_virtual_reg = can_be_in_reg(x64->abi, arg_type);
+                Auto arg_abi = abi_of_obj(abi, arg_type);
+                Bool virtual_reg_is_spilled = (reg_id == NIL);
 
                 arg_stack_offset += padding_to_align(arg_stack_offset, max(abi->stack_arg_min_align, arg_abi.align));
 
-                if (arg_fits_in_virtual_reg) {
+                if (can_be_in_reg(x64->abi, arg_type)) {
                     if (virtual_reg_is_spilled) {
                         emit_memcpy(&x64->elf, astr, TMP1, RSP, RSP, arg_stack_offset, sir_get_spill_stack_slot(x64->frame, arg), arg_abi.size, 0);
                     } else {
