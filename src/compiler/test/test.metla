@@ -46,8 +46,8 @@ fn: #ir0 main {
 
     {
         print("\n");
-        var z: [1]Slice(U8) = ["asdf",];
-        println(z[0]);
+        var z: [2]Slice(U8) = ["asdf", "what"];
+        println(z[1]);
     }
 }
 
