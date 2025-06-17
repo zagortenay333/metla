@@ -21,7 +21,9 @@ istruct (AbiObj) {
 istruct (AbiFn) {
     Abi *abi;
     AbiReg output;
+    Type *output_type;
     Array(AbiReg) inputs;
+    Array(Type*) input_types;
 };
 
 istruct (Abi) {

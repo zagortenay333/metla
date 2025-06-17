@@ -615,18 +615,23 @@ static AbiFn *get_fn_abi (Abi *abi, Mem *mem, TypeFn *type) {
     fn_abi = mem_new(mem, AbiFn);
     fn_abi->abi = abi;
     array_init(&fn_abi->inputs, mem);
+    array_init(&fn_abi->input_types, mem);
     map_add(&a->fn_abis, type_id, fn_abi);
 
+    Auto core_types = sem_get_core_types(abi->sem);
     U8 next_reg = 0;
     constexpr U8 n_regs = 6;
     static U8 regs[n_regs] = { RDI, RSI, RDX, RCX, R08, R09 };
 
     if (type->node->output) {
+        fn_abi->output_type = sem_get_type(abi->sem, type->node->output);
+
         if (can_be_in_reg(abi, sem_get_type(abi->sem, type->node->output))) {
             fn_abi->output = RAX;
         } else {
             // First argument reserved for the return address.
             array_push(&fn_abi->inputs, regs[next_reg++]);
+            array_push(&fn_abi->input_types, core_types->type_void_ptr);
             fn_abi->output = ABI_REG_MEM;
         }
     }
@@ -635,6 +640,7 @@ static AbiFn *get_fn_abi (Abi *abi, Mem *mem, TypeFn *type) {
         Auto t = sem_get_type(abi->sem, input);
         Auto r = (can_be_in_reg(abi, t) && next_reg < n_regs) ? regs[next_reg++] : ABI_REG_MEM;
         array_push(&fn_abi->inputs, r);
+        array_push(&fn_abi->input_types, t);
     }
 
     return fn_abi;
@@ -902,30 +908,19 @@ static Void emit_op (SirX64 *x64, SirOp *op, SirBlock *next_block) {
         if (! (op->flags & SIR_OP_IS_DIRECT_CALL)) args.count--; // To skip the last arg (the fn pointer) in the loop below.
 
         array_iter (arg, &args) {
-            Auto reg     = array_get(&regs->inputs, ARRAY_IDX);
-            Auto reg_id  = sir_reg_id(reg);
-            Auto reg_abi = array_get(&callee_abi->inputs, ARRAY_IDX);
+            Auto reg      = array_get(&regs->inputs, ARRAY_IDX);
+            Auto reg_id   = sir_reg_id(reg);
+            Auto reg_abi  = array_get(&callee_abi->inputs, ARRAY_IDX);
+            Auto arg_type = array_get(&callee_abi->input_types, ARRAY_IDX);
 
-            Bool virtual_reg_is_spilled = (reg_id == NIL);
-            Bool arg_is_passed_on_stack = (reg_abi == ABI_REG_MEM);
-
-            Type *arg_type = arg->type;
-            if ((arg->tag == SIR_OP_STACK_OBJECT) ||
-                (arg->tag == SIR_OP_GLOBAL_OBJECT) ||
-                ((arg->tag == SIR_OP_FN_ARG) && arg_is_passed_on_stack)
-            ) {
-                assert_dbg(arg->type->tag == TYPE_POINTER);
-                arg_type = cast(TypePointer*, arg->type)->pointee;
-            }
-
-            Bool arg_is_in_virtual_reg  = can_be_in_reg(x64->abi, arg_type);
-
-            if (arg_is_passed_on_stack) {
+            if (reg_abi == ABI_REG_MEM) { // Arg passed on stack.
+                Bool virtual_reg_is_spilled = (reg_id == NIL);
+                Bool arg_fits_in_virtual_reg = can_be_in_reg(x64->abi, arg_type);
                 Auto arg_abi = abi_of_obj(abi, arg_type);
 
                 arg_stack_offset += padding_to_align(arg_stack_offset, max(abi->stack_arg_min_align, arg_abi.align));
 
-                if (arg_is_in_virtual_reg) {
+                if (arg_fits_in_virtual_reg) {
                     if (virtual_reg_is_spilled) {
                         emit_memcpy(&x64->elf, astr, TMP1, RSP, RSP, arg_stack_offset, sir_get_spill_stack_slot(x64->frame, arg), arg_abi.size, 0);
                     } else {
