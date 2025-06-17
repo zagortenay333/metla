@@ -12,10 +12,7 @@ fn println (str: Slice(U8)) {
 macro iter_range (it: $, i: U64, n: U64, body: $) {
     var idx = i;
     while idx < n {
-        embed: (
-            refs=(`it=idx),
-            add_return_backticks
-        ) body;
+        embed: (refs=(`it=idx), add_return_backticks) body;
         idx += 1;
     }
 }
@@ -23,10 +20,7 @@ macro iter_range (it: $, i: U64, n: U64, body: $) {
 macro iter_slice (it: $, arr: ~Slice($T), body: $) {
     iter_range: (i, 0, arr~.count) {
         var elem = (arr~.data + i*.sizeof(T))~;
-        embed: (
-            refs=(`it=elem),
-            add_return_backticks
-        ) body;
+        embed: (refs=(`it=elem), add_return_backticks) body;
     }
 }
 
