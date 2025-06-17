@@ -1276,20 +1276,18 @@ static Void emit_global (SirX64 *x64, AString *astr, ArrayAst *nested_globals, A
         assert_dbg(abi->any_value_offset == 8);
         assert_dbg(abi->slice_data_offset == 8);
 
-        Void *sym = n;
+        Void *sym = n->expr;
+
         switch (n->tag) {
-        case AST_CAST_SLICE:
-             switch (n->expr->tag) {
-             case AST_STRING_LITERAL:
-                 assert_dbg(t->tag == TYPE_POINTER);
-                 astr_push_u64(astr, cast(TypeArray*, cast(TypePointer*, t)->pointee)->length);
-                 sym=cast(AstStringLiteral*, n->expr)->str;
-                 break;
-             case AST_ARRAY_LITERAL:  astr_push_u64(astr, cast(TypeArray*, t)->length); break;
-             case AST_TUPLE:          astr_push_u64(astr, cast(AstTuple*, n->expr)->fields.count); break;
-             default:                 badpath;
-             }
-             break;
+        case AST_CAST_SLICE: {
+            Auto val = sem_get_const(sem, n->expr).ast;
+            switch (val->tag) {
+            case AST_ARRAY_LITERAL:  astr_push_u64(astr, cast(TypeArray*, t)->length); break;
+            case AST_TUPLE:          astr_push_u64(astr, cast(TypeTuple*, t)->node->fields.count); break;
+            case AST_STRING_LITERAL: astr_push_u64(astr, cast(TypeArray*, cast(TypePointer*, t)->pointee)->length); sym = cast(AstStringLiteral*, val)->str; break;
+            default:                 badpath;
+            }
+        } break;
         case AST_CAST_ANY: astr_push_u64(astr, t->id); break;
         default: badpath;
         }
