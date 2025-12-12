@@ -1,4 +1,5 @@
 #include <math.h>
+
 #include "base/map.h"
 #include "base/log.h"
 #include "base/string.h"
@@ -1617,10 +1618,20 @@ static Ast *parse_enum (Parser *par) {
 static Ast *parse_defer (Parser *par) {
     Auto node = make_node(par, AstDefer);
     lex_eat_this(lex, TOKEN_DEFER);
-    try_parse_attributes(cast(Ast*, node)->id,);
-    node->stmt = parse_statement(par);
+
+    if (lex_try_peek(lex, TOKEN_DO)) {
+        node->stmt = parse_block(par);
+    } else if (lex_try_peek(lex, '{')) {
+        node->stmt = parse_block(par);
+    } else {
+        node->stmt = try_parse_expression(par, 0);
+        if (! node->stmt) par_error(par, "Expected block or expression.");
+        lex_eat_this(lex, ';');
+    }
+
     return complete_node(par, node);
 }
+
 
 static Ast *parse_import (Parser *par) {
     Auto node = make_node(par, AstImport);

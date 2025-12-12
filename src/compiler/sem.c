@@ -1287,7 +1287,7 @@ static Void error_no_progress (Sem *sem) {
         if (t && is_tvar_untyped_lit(t)) { error_n(sem, n, "Unbound literal."); sem_panic(sem); }
     }
 
-    { // Unkown reason:
+    { // Unknown reason:
         sem_msg(msg, LOG_ERROR);
         astr_push_fmt(msg, "Unable to check the following nodes:\n\n");
         array_iter (n, &sem->check_list) log_node(sem, msg, n);
