@@ -1620,9 +1620,9 @@ static Ast *parse_defer (Parser *par) {
     lex_eat_this(lex, TOKEN_DEFER);
 
     if (lex_try_peek(lex, TOKEN_DO)) {
-        node->stmt = parse_block(par);
+        node->stmt = parse_block_explicit(par);
     } else if (lex_try_peek(lex, '{')) {
-        node->stmt = parse_block(par);
+        node->stmt = parse_block_explicit(par);
     } else {
         node->stmt = try_parse_expression(par, 0);
         if (! node->stmt) par_error(par, "Expected block or expression.");
