@@ -1299,12 +1299,16 @@ static Void mark_poly_arg_position (Parser *par, Ast *parent, Ast *node) {
         mark_poly_arg_position(par, node, n->constraint);
 
         if (n->init && n->constraint && (n->constraint->flags & AST_HAS_POLY_ARGS)) {
-            // Since the constraint contains polyargs we don't want
-            // to typecheck the initializer at all, since it could
-            // be something that is also polymorphic like an anon
-            // struct literal. We will simply make copies of the
-            // initializer for each call. To this end we add the
-            // AST_ADDED_TO_CHECK_LIST flag.
+            // :NoCheckPolyArgInit
+            //
+            // Since the constraint contains polyargs we don't want to typecheck
+            // the initializer at all, since it could be something that is also
+            // polymorphic like an anon struct literal, in which case we would be
+            // matching a polymorph with a polymorph... Instead, we will simply
+            // make copies of the init node for each call size. To this end we
+            // add the AST_ADDED_TO_CHECK_LIST flag. The removed AST_MUST_EVAL
+            // flag will signal to us this case, since function arg inits normally
+            // must have this flag.
             n->init->flags &= ~AST_MUST_EVAL;
             n->init->flags |= AST_ADDED_TO_CHECK_LIST;
         }
@@ -1315,7 +1319,7 @@ static Void mark_poly_arg_position (Parser *par, Ast *parent, Ast *node) {
         mark_poly_arg_position(par, node, n->constraint);
 
         if (n->init && n->constraint && (n->constraint->flags & AST_HAS_POLY_ARGS)) {
-            // Same as in the AST_VAR_DEF case.
+            // :NoCheckPolyArgInit
             n->init->flags &= ~AST_MUST_EVAL;
             n->init->flags |= AST_ADDED_TO_CHECK_LIST;
         }

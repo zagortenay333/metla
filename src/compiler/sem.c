@@ -2399,6 +2399,7 @@ static Result check_call_args_layout (Sem *sem, Ast *target, ArrayAst *target_ar
             if (init->flags & AST_MUST_EVAL) {
                 cast(AstCallDefaultArg*, n)->arg = init;
             } else {
+                // :NoCheckPolyArgInit
                 Ast *arg = ast_deep_copy(sem->mem, init, 0, 0);
                 arg->flags |= AST_MUST_EVAL;
                 cast(AstCallDefaultArg*, n)->arg = arg;

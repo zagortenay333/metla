@@ -120,6 +120,9 @@ istruct (Interns);
 // to scopes before any code generators have run.
 // They must have an "IString *name" field.
 #define EACH_STATIC_NAME_GENERATOR(X)\
+    X(AST_ARG_POLY_CODE, AstArgPolyCode)\
+    X(AST_ARG_POLY_TYPE, AstArgPolyType)\
+    X(AST_ARG_POLY_VALUE, AstArgPolyValue)\
     X(AST_ENUM, AstEnum)\
     X(AST_ENUM_FIELD, AstEnumField)\
     X(AST_FN, AstFn)\
@@ -127,14 +130,11 @@ istruct (Interns);
     X(AST_FN_POLY, AstFnPoly)\
     X(AST_STRUCT, AstStruct)\
     X(AST_STRUCT_POLY, AstStructPoly)\
-    X(AST_VAR_DEF, AstVarDef)\
-    X(AST_ARG_POLY_CODE, AstArgPolyCode)\
-    X(AST_ARG_POLY_TYPE, AstArgPolyType)\
-    X(AST_ARG_POLY_VALUE, AstArgPolyValue)\
     X(AST_TUPLE_FIELD, AstTupleField)\
     X(AST_TYPE_ALIAS, AstTypeAlias)\
     X(AST_TYPE_CONSTRAINT, AstTypeConstraint)\
-    X(AST_TYPE_DISTINCT, AstTypeDistinct)
+    X(AST_TYPE_DISTINCT, AstTypeDistinct)\
+    X(AST_VAR_DEF, AstVarDef)
 
 // X(AstTag, type, description)
 //
