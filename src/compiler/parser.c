@@ -1305,10 +1305,7 @@ static Void mark_poly_arg_position (Parser *par, Ast *parent, Ast *node) {
             // the initializer at all, since it could be something that is also
             // polymorphic like an anon struct literal, in which case we would be
             // matching a polymorph with a polymorph... Instead, we will simply
-            // make copies of the init node for each call site. To this end we
-            // add the AST_ADDED_TO_CHECK_LIST flag. The removed AST_MUST_EVAL
-            // flag will signal to us this case, since function arg inits normally
-            // must have this flag.
+            // make copies of the init node for each call site.
             n->init->flags &= ~AST_MUST_EVAL;
             n->init->flags |= AST_ADDED_TO_CHECK_LIST;
         }
